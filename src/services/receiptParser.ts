@@ -221,8 +221,23 @@ function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
+/** Japanese izakaya sample (JPY) for demos when the app language is ja */
+const JA_SAMPLE_ITEMS: ParsedReceiptItem[] = [
+  { id: "J001", name: "生ビール（中）", unitPrice: 550, quantity: 4, totalPrice: 2200 },
+  { id: "J002", name: "枝豆", unitPrice: 480, quantity: 1, totalPrice: 480 },
+  { id: "J003", name: "鶏の唐揚げ", unitPrice: 680, quantity: 1, totalPrice: 680 },
+  { id: "J004", name: "刺身盛り合わせ", unitPrice: 1580, quantity: 1, totalPrice: 1580 },
+  { id: "J005", name: "だし巻き玉子", unitPrice: 520, quantity: 1, totalPrice: 520 },
+  { id: "FEE1", name: "お通し", unitPrice: 350, quantity: 2, totalPrice: 700, kind: "fee" },
+];
+
 /** Fallback deterministic mock when API key missing or parse fails */
-function mockParse(): ParseResult {
+function mockParse(language?: string): ParseResult {
+  if (language?.toLowerCase().startsWith("ja")) {
+    const items = JA_SAMPLE_ITEMS.map((item) => ({ ...item }));
+    const grandTotal = items.reduce((s, i) => s + i.totalPrice, 0);
+    return { items, summary: { grandTotal, currency: "JPY" }, source: "mock" };
+  }
   const items: ParsedReceiptItem[] = [
     {
       id: "1001",
@@ -261,7 +276,7 @@ export async function parseReceipt(
   if (!GEMINI_API_KEY) {
     if (DEBUG_PARSE)
       console.warn("[parseReceipt] Using mock: GEMINI_API_KEY not set");
-    return mockParse();
+    return mockParse(options.language);
   }
 
   if (DEBUG_PARSE && !/^AIza[0-9A-Za-z_-]{10,}$/.test(GEMINI_API_KEY)) {
@@ -378,7 +393,7 @@ export async function parseReceipt(
       "[parseReceipt] All model attempts failed, returning mock. Last error:",
       lastError
     );
-  const fallback = mockParse();
+  const fallback = mockParse(options.language);
   if (DEBUG_PARSE) fallback.modelsTried = modelsTried;
   return fallback;
 }
