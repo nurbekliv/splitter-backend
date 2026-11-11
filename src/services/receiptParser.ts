@@ -38,6 +38,7 @@ export interface ParseOptions {
   sessionName: string;
   mimeType: string;
   imageBase64: string; // no data: prefix, raw base64
+  sample?: boolean; // demo: return the sample receipt without calling Gemini
 }
 
 // Environment-driven configuration
@@ -273,7 +274,7 @@ function mockParse(language?: string): ParseResult {
 export async function parseReceipt(
   options: ParseOptions
 ): Promise<ParseResult> {
-  if (!GEMINI_API_KEY) {
+  if (!GEMINI_API_KEY || options.sample) {
     if (DEBUG_PARSE)
       console.warn("[parseReceipt] Using mock: GEMINI_API_KEY not set");
     return mockParse(options.language);

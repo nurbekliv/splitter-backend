@@ -83,7 +83,7 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       if (!req.user) return res.status(401).json({ error: "Unauthorized" });
-      const { sessionName, language, image } = req.body || {};
+      const { sessionName, language, image, sample } = req.body || {};
       if (!sessionName || typeof sessionName !== "string") {
         return res.status(400).json({ error: "sessionName required" });
       }
@@ -115,6 +115,7 @@ router.post(
         sessionName,
         mimeType: image.mimeType,
         imageBase64: image.data,
+        sample: sample === true,
       });
 
       return res.json({
